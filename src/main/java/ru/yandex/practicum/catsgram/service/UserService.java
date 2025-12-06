@@ -16,6 +16,14 @@ public class UserService {
         return Optional.ofNullable(users.get(userId));
     }
 
+    public User getUserById(long idUser) {
+        User user = users.get(idUser);
+        if(user == null) {
+            throw new ConditionsNotMetException("Пользователь с id: " + idUser + " не найден");
+        }
+        return user;
+    }
+
     public List<User> getUsers() {
         return new ArrayList<>(users.values());
     }

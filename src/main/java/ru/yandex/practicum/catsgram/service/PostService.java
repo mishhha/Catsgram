@@ -2,16 +2,14 @@ package ru.yandex.practicum.catsgram.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.catsgram.SortOrder;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 // Указываем, что класс PostService - является бином и его
 // нужно добавить в контекст приложения
@@ -27,8 +25,40 @@ public class PostService {
         this.userService = userService;
     }
 
-    public Collection<Post> findAll() {
-        return posts.values();
+    public Collection<Post> findAll(SortOrder sort, int from, int size) {
+        Comparator<Post> comparator = Comparator.comparing(post -> post.getPostDate());
+        List<Post> sortedPost = new ArrayList<>(posts.values());
+
+        if(sort == null || sort == SortOrder.DESCENDING) {
+            sortedPost.sort(comparator.reversed());
+        } else {
+            sortedPost.sort(comparator);
+        }
+
+        if(from > sortedPost.size()) {
+            return new ArrayList<>();
+        }
+
+        if(from == 0 && size == 10) {
+            if(sortedPost.size() < 10) {
+                return new ArrayList<>(sortedPost.subList(0, sortedPost.size()));
+            }
+            return new ArrayList<>(sortedPost.subList(0, 10));
+        }
+
+        if(size > sortedPost.size() || size + from > sortedPost.size()) {
+            return new ArrayList<>(sortedPost.subList(from, sortedPost.size()));
+        }
+
+        return new ArrayList<>(sortedPost.subList(from, from + size));
+    }
+
+    public Post getPostById(long idPost) {
+        Post post = posts.get(idPost);
+        if(post == null) {
+            throw new ConditionsNotMetException("Пост с id: " + idPost + " не найден");
+        }
+        return post;
     }
 
     public Post create(Post post) {
