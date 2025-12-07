@@ -53,7 +53,7 @@ public class PostService {
         return new ArrayList<>(sortedPost.subList(from, from + size));
     }
 
-    public Post getPostById(long idPost) {
+    public Post findById(long idPost) {
         Post post = posts.get(idPost);
         if(post == null) {
             throw new ConditionsNotMetException("Пост с id: " + idPost + " не найден");
